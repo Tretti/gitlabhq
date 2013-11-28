@@ -159,6 +159,13 @@ class ProjectForkedMergeRequests < Spinach::FeatureSteps
   step 'I fill out an invalid "Merge Request On Forked Project" merge request' do
     #If this isn't filled in the rest of the validations won't be triggered
     fill_in "merge_request_title", with: "Merge Request On Forked Project"
+
+    select "Select branch", from: "merge_request_source_branch"
+    select "Select branch", from: "merge_request_target_branch"
+
+    source_project = find("#merge_request_source_project_id option").text
+    select source_project, from: "merge_request_target_project_id"
+
     find(:select, "merge_request_source_project_id", {}).value.should == @forked_project.id.to_s
     find(:select, "merge_request_target_project_id", {}).value.should == @forked_project.id.to_s
     find(:select, "merge_request_source_branch", {}).value.should == ""

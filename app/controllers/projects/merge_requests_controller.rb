@@ -49,8 +49,12 @@ class Projects::MergeRequestsController < Projects::ApplicationController
   def new
     @merge_request = MergeRequest.new(params[:merge_request])
     @merge_request.source_project = @project unless @merge_request.source_project
-    @merge_request.target_project = @project unless @merge_request.target_project
+    @merge_request.target_project ||= (@project.forked_from_project || @project)
     @target_branches = @merge_request.target_project.nil? ? [] : @merge_request.target_project.repository.branch_names
+
+    @merge_request.target_branch ||= @merge_request.target_project.default_branch
+    @merge_request.source_branch ||= @merge_request.source_project.repository.branch_names.last
+
     @source_project = @merge_request.source_project
     @merge_request
   end
