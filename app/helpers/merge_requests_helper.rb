@@ -15,12 +15,23 @@ module MergeRequestsHelper
   end
 
   def new_mr_from_push_event(event, target_project)
+    merge_request = MergeRequest.new(
+      source_branch: event.branch_name,
+      target_branch: target_project.repository.root_ref,
+      source_project_id: event.project.id,
+      target_project_id: target_project.id
+    )
+    merge_request.author = event.author
+
+    title, description = title_and_description(merge_request)
+
     return :merge_request => {
       source_project_id: event.project.id,
       target_project_id: target_project.id,
       source_branch: event.branch_name,
       target_branch: target_project.repository.root_ref,
-      title: event.branch_name.titleize
+      title: title,
+      description: description,
     }
   end
 
@@ -41,5 +52,29 @@ module MergeRequestsHelper
     else
       "Branches: #{@merge_request.source_branch} #{separator} #{@merge_request.target_branch}"
     end
+  end
+
+private
+
+  def title_and_description (merge_request)
+    source_branch = merge_request.source_branch
+    source_repository = merge_request.source_project.repository
+    source_commit = source_repository.commit(source_branch) if source_branch.present?
+
+    target_repository = merge_request.target_project.repository
+    target_commit = target_repository.commit(merge_request.target_branch) if merge_request.target_branch.present?
+
+    if source_commit && target_commit
+      merge_request.reload_code if merge_request.commits.blank?
+
+      if merge_request.commits.length == 1
+        description = source_commit.description.try(:strip)
+        title = source_commit.title
+      end
+    end
+
+    title = source_branch.titleize if title.blank?
+
+    return title, description
   end
 end

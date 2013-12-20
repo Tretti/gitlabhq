@@ -71,15 +71,17 @@
     , target_branch = $("#merge_request_target_branch")
     , target_project = $("#merge_request_target_project_id");
 
-  $.get("#{branch_from_project_merge_requests_path(@source_project)}", {ref: source_branch.val() });
-  $.get("#{branch_to_project_merge_requests_path(@source_project)}", {target_project_id: target_project.val(),ref: target_branch.val() });
+  var serialized_form = $("#new_merge_request").serialize();
+
+  $.get("#{branch_from_project_merge_requests_path(@source_project)}", serialized_form);
+  $.get("#{branch_to_project_merge_requests_path(@source_project)}", serialized_form);
 
   target_project.on("change", function() {
     $.get("#{update_branches_project_merge_requests_path(@source_project)}", {target_project_id:  $(this).val() });
   });
   source_branch.on("change", function() {
-    $.get("#{branch_from_project_merge_requests_path(@source_project)}", {ref: $(this).val() });
+    $.get("#{branch_from_project_merge_requests_path(@source_project)}", $("#new_merge_request").serialize());
   });
   target_branch.on("change", function() {
-    $.get("#{branch_to_project_merge_requests_path(@source_project)}", {target_project_id: target_project.val(),ref: $(this).val() });
+    $.get("#{branch_to_project_merge_requests_path(@source_project)}", $("#new_merge_request").serialize());
   });

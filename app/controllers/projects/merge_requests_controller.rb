@@ -114,12 +114,11 @@ class Projects::MergeRequestsController < Projects::ApplicationController
   def branch_from
     #This is always source
     @source_project = @merge_request.nil? ? @project : @merge_request.source_project
-    @commit = @repository.commit(params[:ref]) if params[:ref].present?
+    define_branch_vars
   end
 
   def branch_to
-    @target_project = selected_target_project
-    @commit = @target_project.repository.commit(params[:ref]) if params[:ref].present?
+    define_branch_vars
   end
 
   def update_branches
@@ -190,6 +189,27 @@ class Projects::MergeRequestsController < Projects::ApplicationController
     @target_id = @merge_request.id
 
     @fast_forward = Gitlab.config.git[:fast_forward]
+  end
+
+  def define_branch_vars
+    merge_request = MergeRequest.new(params[:merge_request])
+
+    source_branch = merge_request.source_branch
+    @source_commit = @repository.commit(source_branch) if source_branch.present?
+
+    @target_project = selected_target_project
+    @target_commit = @target_project.repository.commit(merge_request.target_branch) if merge_request.target_branch.present?
+
+    if @source_commit && @target_commit
+      merge_request.reload_code
+
+      if merge_request.commits.length == 1
+        @description = @source_commit.description.try(:strip)
+        @title = @source_commit.title
+      end
+    end
+
+    @title = source_branch.titleize if @title.blank?
   end
 
   def allowed_to_merge?
