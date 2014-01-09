@@ -182,6 +182,36 @@ ul.notes {
     }
   }
 }
+
+.file {
+  &.js-details-container {
+    .turn-off {
+      display: inherit;
+    }
+    .turn-on {
+      display: none;
+    }
+
+    &.open {
+      .turn-off {
+        display: none;
+      }
+      .turn-on {
+        display: inherit;
+      }
+    }
+  }
+
+  .discussion-actions {
+    margin-right: 5px;
+    margin-top: 3px;
+  }
+
+  &[id^="diff"] .content {
+    display: block;
+  }
+}
+
 .file .note .note-actions {
   right: 0;
   top: 0;
